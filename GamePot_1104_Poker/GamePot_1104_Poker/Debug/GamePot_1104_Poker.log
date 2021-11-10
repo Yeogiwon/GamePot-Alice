@@ -1,4 +1,5 @@
 ﻿  Main.cpp
-C:\Users\User\Desktop\GamePot_1104_Poker\GamePot_1104_Poker\Class.h(149,21): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+C:\Users\User\Desktop\GamePot_1104_Poker\GamePot_1104_Poker\Class.h(257,21): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+C:\Users\User\Desktop\GamePot_1104_Poker\GamePot_1104_Poker\Class.h(358,21): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
 C:\Users\User\Desktop\GamePot_1104_Poker\GamePot_1104_Poker\Main.cpp(6,1): warning C4326: 'main'의 반환 형식이 'int'이어야 하는데 'void'입니다.
   GamePot_1104_Poker.vcxproj -> C:\Users\User\Desktop\GamePot_1104_Poker\Debug\GamePot_1104_Poker.exe
