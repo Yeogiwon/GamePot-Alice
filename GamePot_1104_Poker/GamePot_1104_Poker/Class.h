@@ -145,7 +145,7 @@ public:
 	vector<Unit> m_listChosenFriendlyUnit;
 	vector<Unit> m_listChosenEnenyUnit;
 
-	UnitManager()
+	UnitManager()//유닛 리스트 추가,
 	{
 		m_listFriendlyUnit.resize(4);
 		m_listEnemyUnit.resize(4);
@@ -229,7 +229,7 @@ class EffectManager
 {
 	vector<Effect*> listEffect;
 public:
-	void Init()
+	void Init() // 효과 추가
 	{
 		// 효과 추가시 여기에 최신화
 		listEffect.resize(3);
@@ -267,17 +267,17 @@ class SkillManager
 	vector<Skill*> listSkill;
 public:
 
-	void Init(EffectManager* pEffectManager)
+	void Init(EffectManager& pEffectManager) // 효과추가
 	{
 		// 이 뒤에 스킬 추가(효과를 조합) 및 갯수 최신화
 		listSkill.resize(3);
 		listSkill[0] = new Skill();
-		listSkill[0]->AddEffect(pEffectManager->GetEffect(0));
+		listSkill[0]->AddEffect(pEffectManager.GetEffect(0));
 		listSkill[1] = new Skill();
-		listSkill[1]->AddEffect(pEffectManager->GetEffect(1));
+		listSkill[1]->AddEffect(pEffectManager.GetEffect(1));
 		listSkill[2] = new Skill();
-		listSkill[2]->AddEffect(pEffectManager->GetEffect(2));
-		listSkill[2]->AddEffect(pEffectManager->GetEffect(0));
+		listSkill[2]->AddEffect(pEffectManager.GetEffect(2));
+		listSkill[2]->AddEffect(pEffectManager.GetEffect(0));
 	}
 	Skill* GetSkill(int idx)
 	{
@@ -285,68 +285,28 @@ public:
 	}
 };
 
-class Map
-{
-	enum E_MAPTYPE { ItemShop, BattleField, Start, BossBattle, MAX};
-	E_MAPTYPE e_MapType;
-	vector<Unit> Enemy_in_Map;
-	vector<Map> nearMap;
-	int difficulty = 0;
-public:
-	bool is_clear = false;
-	
-	Map()
-	{
-		Enemy_in_Map.resize(4);
-	}
-
-	void PushEnemy(Unit enemy)
-	{
-		Enemy_in_Map.push_back(enemy);
-	}
-};
-
-// 이 뒤에 맵 추가
-
-
-class MapManager
-{
-	vector<Map*> listMap;
-	// 스테이지를 만들기
-public:
-
-	void Init(MapManager* pMapManager)
-	{
-		listMap.resize(4);
-	}
-
-	Map* GetMap(int idx)
-	{
-		return listMap[idx];
-	}
-
-};
-
 class Item
 {
-	enum E_ITEM_KIND { ARCITACT, POTION, THROW };
-
+public:
+	enum class E_ITEM_KIND { ARCITACT, POTION, THROW };
+	enum class E_ITEM_RARE { NORMAL, RARE, UNIQUE, SPECIAL };
 	E_ITEM_KIND e_ItemKind;
-
+	E_ITEM_RARE nRare;
 	string strName;
 	string strComment;
 	Stat sFuction;
 	int nGold;
 	vector<Effect*> listSpecialEffect;
-public:
+
 	Item() {}
-	Item(E_ITEM_KIND kind, string name, string comment, Stat status, int gold)
+	Item(E_ITEM_KIND kind, string name, string comment, Stat status, int gold, E_ITEM_RARE rare)
 	{
 		e_ItemKind = kind;
 		strName = name;
 		strComment = comment;
 		sFuction = status;
 		nGold = gold;
+		nRare = rare;
 	}
 	void AddEffect(Effect* effect)
 	{
@@ -371,20 +331,83 @@ class ItemManager
 {
 	vector<Item> m_listItems;
 public:
-	void Init()
+
+
+
+	void Init() // 효과추가
 	{
 		m_listItems.resize(10);
+		m_listItems[0] = Item(Item::E_ITEM_KIND::ARCITACT, "화려한 장식검", "쓸데없이 화려해 보이지만 나름 쓸모있는 검", Stat(0, 0, 10, 0, 0, 0, 0, 0, 0), 50, Item::E_ITEM_RARE::NORMAL);
 
 	}
 	Item GetItem(int idx)
 	{
 		return m_listItems[idx];
 	}
+
+	Item* GetItemPoint(int idx)
+	{
+		//Item* pointer = &m_listItems[idx];
+		return &m_listItems[idx];
+	}
 };
+
+class Map
+{
+	enum E_MAPTYPE { ItemShop, BattleField, Start, BossBattle, MAX};
+	E_MAPTYPE e_MapType;
+	vector<Unit> Enemy_in_Map;
+	vector<Map> nearMap;
+	int difficulty = 0;
+public:
+	bool is_clear = false;
+	vector<Item*> DropTable;
+	
+	Map()
+	{
+		Enemy_in_Map.resize(4);
+		DropTable.resize(3);
+	}
+
+	void PushEnemy(Unit enemy)
+	{
+		Enemy_in_Map.push_back(enemy);
+	}
+
+	void AddItem(Item* item)
+	{
+		DropTable.push_back(item);
+	}
+};
+
+// 이 뒤에 맵 추가
+
+
+class MapManager
+{
+	vector<Map*> listMap;
+	// 스테이지를 만들기
+public:
+
+	void Init(ItemManager& pItemManager) // 맵의 드롭 아이템 설정, 적 설정
+	{
+		listMap.resize(4);
+		listMap[0]->DropTable.push_back(pItemManager.GetItemPoint(0));
+	}
+
+	Map* GetMap(int idx)
+	{
+		return listMap[idx];
+	}
+
+};
+
+
 
 class Player
 {
 	int pGold = 0;
+	string name = "앨리스";
 public:
 	
 	Map* pLocation_now;
@@ -491,19 +514,38 @@ private:
 	ItemManager m_ItemManager;
 
 	Player m_Player;
-	Player m_Shop;
+	
 
 
 public:
 
+	void Init()
+	{
+		
+		m_EffectManager.Init();
+		m_SkillManager.Init(m_EffectManager);
+		m_MapManager.Init(m_ItemManager);
+		m_ItemManager.Init();
+	}
+
 	void EventGameStart()
 	{
-
+		enum E_MENU {GAMESTART, STORY, OPTION, EXIT, MAX};
 	}
 
 	void EventCreateAlice() // 유저이름 작성 하지만 다 앨리스로 치환되며 시작
 	{
-
+		string name;
+		cin >> name;
+		if (name == "앨리스")
+		{
+			cout << "!?!?!?!?!?";
+		}
+		else
+		{
+			name = "앨리스";
+			cout << "앨리스라고 하는 구나?";
+		}
 	}
 
 	void EventStandby() // 맵 선택을 기다리는 대기화면 기본화면이라고도 할 수 있음
@@ -511,14 +553,15 @@ public:
 
 	}
 
-	void EventMove() // 맵이동 다른 이벤트 사이사이 업데이트마다 추가
+	void EventMove() // 맵이동 다른 이벤트 사이 사이 업데이트마다 추가
 	{
 
 	}
 
 	void EventShop() // 아이템 샵이 나타남
 	{
-
+		Player Shop;
+		//Shop.SetInventory(&m_ItemManager.GetItem(0));
 	}
 
 	void EventInventory() // 맵 이동 혹은 전투 중 인벤토리를 볼수있음
@@ -528,7 +571,8 @@ public:
 
 	void EventDrop() // 아이템 상자를 열어 아이템 획득 (혹은 함정?)
 	{
-
+		vector<Item> DropTable;
+		//DropTable.push_back()
 	}
 
 	void EventBattle() // 적을 만남 승리 시 EventDrop으로 이동, 패배 시 게임 오버
@@ -537,7 +581,8 @@ public:
 		switch (result)
 		{
 		case 1: EventResult();
-			EventDrop();
+			SetEvent(E_EVENT::DROP);
+			SetEvent(E_EVENT::STANDBY);
 			break;
 		case 2: EventGameClear();
 			break;
@@ -606,7 +651,12 @@ public:
 		}
 	}
 
-	E_EVENT GetStage()
+	void SetEvent(E_EVENT changer)
+	{
+		m_EventNow = changer;
+	}
+
+	E_EVENT GetEvent()
 	{
 		return m_EventNow;
 	}
