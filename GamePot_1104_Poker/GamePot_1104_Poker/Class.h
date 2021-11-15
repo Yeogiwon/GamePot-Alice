@@ -325,20 +325,22 @@ public:
 	{
 		return nGold;
 	}
+
+	void ShowItem()
+	{
+		cout << strName << endl;
+		//cout << e_ItemKind << endl;
+	}
 };
 
 class ItemManager
 {
 	vector<Item> m_listItems;
 public:
-
-
-
 	void Init() // 효과추가
 	{
 		m_listItems.resize(10);
 		m_listItems[0] = Item(Item::E_ITEM_KIND::ARCITACT, "화려한 장식검", "쓸데없이 화려해 보이지만 나름 쓸모있는 검", Stat(0, 0, 10, 0, 0, 0, 0, 0, 0), 50, Item::E_ITEM_RARE::NORMAL);
-
 	}
 	Item GetItem(int idx)
 	{
@@ -359,9 +361,10 @@ class Map
 	vector<Unit> Enemy_in_Map;
 	vector<Map> nearMap;
 	int difficulty = 0;
+
 public:
 	bool is_clear = false;
-	vector<Item*> DropTable;
+	vector<Item> DropTable;
 	
 	Map()
 	{
@@ -374,7 +377,7 @@ public:
 		Enemy_in_Map.push_back(enemy);
 	}
 
-	void AddItem(Item* item)
+	void AddItem(Item item)
 	{
 		DropTable.push_back(item);
 	}
@@ -392,7 +395,7 @@ public:
 	void Init(ItemManager& pItemManager) // 맵의 드롭 아이템 설정, 적 설정
 	{
 		listMap.resize(4);
-		listMap[0]->DropTable.push_back(pItemManager.GetItemPoint(0));
+		listMap[0]->DropTable.push_back(pItemManager.GetItem(0)); //예가 문제
 	}
 
 	Map* GetMap(int idx)
@@ -437,6 +440,14 @@ public:
 		plistInventory.erase(plistInventory.begin() + idx);
 	}
 
+	void ShowInventory()
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			plistInventory[i]->ShowItem();
+		}
+		
+	}
 	/////////////////// 상점 관련 함수 /////////////////////////
 
 	bool Buy(Item* item, int idx)
@@ -524,8 +535,9 @@ public:
 		
 		m_EffectManager.Init();
 		m_SkillManager.Init(m_EffectManager);
-		m_MapManager.Init(m_ItemManager);
 		m_ItemManager.Init();
+		m_MapManager.Init(m_ItemManager);
+		
 	}
 
 	void EventGameStart()
@@ -566,7 +578,7 @@ public:
 
 	void EventInventory() // 맵 이동 혹은 전투 중 인벤토리를 볼수있음
 	{
-
+		m_Player.ShowInventory();
 	}
 
 	void EventDrop() // 아이템 상자를 열어 아이템 획득 (혹은 함정?)
@@ -601,12 +613,12 @@ public:
 
 	void EventGameClear() // 보스전에서 승리했을 경우 출력
 	{
-
+		cout << "승리";
 	}
 
 	void EventGameOver() // 보스전 혹은 전투에서 패배했을 경우 출력
 	{
-
+		cout << "패배";
 	}
 
 	void EventUpDate()
